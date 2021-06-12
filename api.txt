@@ -1,0 +1,227 @@
+Note for API （all API return json format）
+all response have status object, status code follow HTTP ERROR CODE
+date format: yyyy-mm-dd
+loginAPI:
+	request: 
+		userName
+		password
+	response: 
+			 userId,
+			 token
+			 role: operator/admin
+			 status{
+				code,
+					（404 : user not found
+					 401： authentication failed）
+				message
+			 }
+			 
+getArrivalBatch
+	request:
+		userId,
+		token,
+		warehouseId,(Markham as default and defined in database as top one)
+		createDateFrom, 
+		createDateTo,
+		isAll -- boolean
+		arrivalBatch
+	response:
+		arrivalBatch,
+		createDate,
+		totalOrder,
+		arrivedOrder,
+		completedOrder,
+		inProgressOrder,
+		cancelledOrder,
+		pickupOrder,
+		percentDelivered
+		
+		
+getWareHouseList
+	request:
+		userId,
+		token
+	response:
+		List of warehouse
+		warehouse:
+			warehouseId,
+			warehouseName
+		
+createArrivalBatch
+	request:
+		userId,
+		token,
+		warehouseId
+	response:
+		arrivalBatch
+	
+getArrivedParcelList
+	request:
+		userId,
+		token,
+		arrivalBatch
+	response:
+		List of simplified parcel under arrivalBatch
+		scanedparcels (name of List)
+			parcelNumber,
+			zone
+		List of simplified parcel which is unscanned
+		unscanedParcels (name of List)
+			parcelNumber,
+			zoneId
+			
+scanedParcel
+	request:
+		userId,
+		token,
+		arrivalBatch(could be zero if scaned from routePlanning and check parcel state should be 已入库)，
+		parcelNumber
+	response
+		status
+		
+deliveryOverview
+	request:
+		userId,
+		token,
+		List of arrivalBatch
+	response
+		list of postcode(first three postcode) and parcel amount
+		first three postcode,
+		zone，
+		amountofParcel,
+		List of arrivalBatch
+		
+routePlanning
+	request:
+		userId,
+		token,
+		list of group and postcode
+		List of arrivalBatch
+	response:
+		status
+		
+deliveryBatchList
+	request:
+		userId, 
+		token,
+		devlieryBatch
+		createDateFrom
+		createDateTo
+	response:
+		deliveryBatch
+		totalOrders
+		deliveryState
+		createDate
+		userName
+		
+driverList
+	request:
+		userId,
+		token
+	response:
+	List of drivers
+	driver:
+		driverId,
+		driverName
+		
+groupOfParcels:
+	request：
+		userId，
+		token,
+		deliveryBatch
+	response:
+		deliveryBatch,
+		Map<Integer(group), List<Parcel>> groupParcelMap
+		Map<Integer(group), Integer(driverId)> groupDriverMap
+	(parcel: squence, parcelNumber, postcode, address (including geolocation))	
+	
+addParcelToRoutePlanning
+	request:
+		userId,
+		token,
+		parcelNumber
+	response:
+		parcel: 
+			(squence, parcelNumber, postcode, address (including geolocation)
+	
+handleRoutePlanning (MT delete and insert, no update)
+	request:
+		action(redo, save and complete),
+		deliveryBatch,
+		Map<Integer(group), List<Parcel>> groupParcelMap
+		Map<Integer(group), Integer(driverId)> groupDriverMap
+	response:
+		status
+		
+getParcels
+	request:
+		userId,
+		token, 
+		parcelNumber,
+		arrivalBatch,
+		arrivalDateFrom,
+		arrivalDateTo,
+		state,
+		receiverName,
+		address,
+		postCode,
+		receiverPhone
+	response:
+		List<Parcel>
+		
+handleParcel (操作dropdown需要和Stella进一步确定)
+	request:
+		userId,
+		token,
+		action: create, update
+		parcel
+	response
+		status
+（history也需要确认一下，貌似和tracking的信息重复）			
+			
+getStateList
+	request:
+		userId,
+		tokem
+	response:
+		stateId,
+		stateName,
+		stateDescription
+		
+trackingHistory
+	request:
+		userId,
+		token,
+		parcelNumber
+	response:
+		List<State>
+		State:
+			parcelNumber,
+			stateName,
+			StateDescription,
+			stateDateTime
+			
+getDriverList
+	reqeust:
+		userId,
+		token
+	response	
+		List<Driver>
+			Driver:
+				driverID(driver license?)
+				usreId,
+				phone,
+				lastName,
+				firstName,
+				workingzone,
+				isRealDriver (boolean default is true)
+				
+handleDriver:
+	request:
+		userId,
+		token,
+		action: create, update, delete
+		driver (same as above driver)
+	response	
+		status
+	
